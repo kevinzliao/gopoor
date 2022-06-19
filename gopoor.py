@@ -10,7 +10,7 @@ import time
 
 global audio_thread
 
-camera = picamera.PiCamera(resolution=(640, 480), framerate=30)
+camera = picamera.PiCamera(resolution=(640, 480), framerate=25)
 button = Button(2)
 button2 = Button(3)
 green_led = LED(17)
@@ -34,16 +34,21 @@ def record_button():
         timestamp = str(now.strftime("%y%m%d%H%M%S"))
         path = '/home/pi/Videos/'
 
-        audio_thread.start(timestamp, path)
         camera.start_recording(path + timestamp + '.h264')
+        audio_thread.start(timestamp, path)
+
 
         # keep recording until we press the button again
         while recording:
-            camera.wait_recording(0.1)
+            camera.wait_recording(0.01)
             print(recording)
+            print(button2.value)
+            if button2.value:
+                break
+        print('exit recording loop')
 
-        audio_thread.stop()
         camera.stop_recording()
+        audio_thread.stop()
 
         red_led.off()
         green_led.on()
