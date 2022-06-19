@@ -1,0 +1,6 @@
+picamera
+pyaudio
+wave
+gpiozero
+sounddevice
+soundfile

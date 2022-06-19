@@ -39,6 +39,7 @@ class AudioRecorder:
     def start(self, file_name, file_dir):
         self.open = True
         self.file_name = '{}{}.wav'.format(file_dir, file_name)
+        print('this is the file name:' + '{}{}.wav'.format(file_dir, file_name))
 
         audio_thread = threading.Thread(target=self.record)
         audio_thread.start()
