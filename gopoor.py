@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import datetime
 from signal import pause
-from gpiozero import LED, Button
+from gpiozero import Button
 import picamera
 import threading
 from AudioRecorder import AudioRecorder
