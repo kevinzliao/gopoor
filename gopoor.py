@@ -13,22 +13,26 @@ global audio_thread
 camera = picamera.PiCamera(resolution=(640, 480), framerate=25)
 button = Button(2)
 button2 = Button(3)
-green_led = LED(17)
-red_led = LED(22)
-
 recording = False
 audio_thread = AudioRecorder()
 
+ready_state = 1
+
 # let camera get ready
 time.sleep(2)
-green_led.on()
+
+def toggle_led():
+    global ready_state
+    return  'echo {} | sudo tee /sys/class/leds/led1/brightness'.format(ready_state ^ 1)
+
 
 def record_button():
     global recording
-    # ready state when green led is on and red led is off
-    if not recording and green_led.value == 1:
-        green_led.off()
-        red_led.on()
+    global ready_state
+
+    if not recording and ready_state:
+        ready_state = 0
+        subprocess.Popen(toggle_led(), shell=True)
         recording = True
         now = datetime.datetime.now()
         timestamp = str(now.strftime("%y%m%d%H%M%S"))
@@ -50,24 +54,13 @@ def record_button():
         camera.stop_recording()
         audio_thread.stop()
 
-        red_led.off()
-        green_led.on()
-
-        # we can start other threads while this post-processing occurs
-        print("start muxing")
         cmd = "ffmpeg -i {1}/{0}.wav -i {1}/{0}.h264 -c:v copy -c:a aac -strict experimental {1}/{0}.mp4 && rm {1}/{0}.wav && rm {1}/{0}.h264".format(timestamp, path)
         subprocess.call(cmd, shell=True)
-
-    else:
-        print('this should be invoked')
+        ready_state = 1
+        subprocess.Popen(toggle_led(), shell=True)
         recording = False
 
-def stop_record():
-    print('this second button was pressed')
-    global recording
-    recording = False
-
+subprocess.Popen(toggle_led(), shell=True)
 button.when_pressed = record_button
-button2.when_pressed = stop_record
 
 pause()
